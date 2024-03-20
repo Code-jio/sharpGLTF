@@ -55,4 +55,4 @@ await document.transform(
 console.log("Done.");
 
 // 写入模型文件 并以draco格式压缩
-await io.write("output.drc", document, { dracoOptions: { compressionLevel: 10 } }); // 压缩
+await io.write("/draco/output.drc", document, { dracoOptions: { compressionLevel: 10 } }); // 压缩
