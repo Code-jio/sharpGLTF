@@ -2,57 +2,48 @@ import { Document, NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import draco3d from "draco3dgltf";
 
+import { resample, prune, dedup, draco, textureCompress } from '@gltf-transform/functions';
+// import sharp from 'sharp'; // Node.js only.
 
-import { simplify, textureCompress, weld } from "@gltf-transform/functions"; // 网格优化
-import { MeshoptSimplifier } from "meshoptimizer"; // 网格优化
-
-// import sharp from "sharp"; // 纹理压缩
-// sharp的使用？
-// https://sharp.pixelplumbing.com/api-output#jpeg
 
 // Configure I/O.
 const io = new NodeIO()
   .registerExtensions(ALL_EXTENSIONS)
   .registerDependencies({
-    "draco3d.decoder": await draco3d.createDecoderModule(), // Optional.
-    "draco3d.encoder": await draco3d.createEncoderModule(), // Optional.
+    "draco3d.decoder": await draco3d.createDecoderModule(),
+    "draco3d.encoder": await draco3d.createEncoderModule(),
   });
 
 // Read from URL.
 let document = await io.read("./gltf/scene.glb");
 
-
-let ratio = 0; // 优化比例
-let error = 0.001;
-
 await document.transform(
-  // 网格优化
-  weld({ tolerance: 0.0001 }), // 
-  // 网格优化
-  simplify({
-    filter: (primitive) => {
-      return primitive.getPointCount() > 100;
-    }, // 100 个点以上的网格才进行优化
-    simplifier: MeshoptSimplifier,
-    error,
-    ratio,
-  }),
-
-  // 纹理压缩
-  textureCompress(
-    {
-      quality: 10, //  0-100 质量
-      format: "astc", // "astc", "etc2", "pvrtc", "s3tc"
-      mode: "lossy", // "lossy", "lossless"
-    },
-    {
-      filter: (texture) => {
-        return texture.getMimeType() === "image/jpeg";
-      },
-    }
-  )
+    // 无损重采样动画帧。
+    resample(),
+    // 删除未使用的节点、纹理或其他数据。
+    prune(),
+    // 移除重复的顶点或纹理数据
+    dedup(),
+    // 几何体压缩
+    draco(),
+    // // 纹理压缩
+    // textureCompress({
+    //     encoder: sharp,
+    //     targetFormat: 'webp',
+    //     resize: [1024, 2024],
+    // }),
+    // 自定义
+    backfaceCulling({cull: true}),
 );
-console.log("Done.");
 
-// 写入模型文件 并以draco格式压缩
-await io.write("/draco/output.drc", document, { dracoOptions: { compressionLevel: 10 } }); // 压缩
+// 自定义背面剔除
+function backfaceCulling(options) {
+    return (document) => {
+        for (const material of document.getRoot().listMaterials()) {
+            material.setDoubleSided(!options.cull);
+        }
+    };
+}
+console.log("done")
+// 写入
+await io.write("./export/output.gltf", document);
