@@ -2,3 +2,6 @@
 node_modules
 # 忽略 gltf 目录
 gltf
+# 忽略model、export目录
+model
+export

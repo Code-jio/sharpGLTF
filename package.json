@@ -16,6 +16,7 @@
     "@gltf-transform/functions": "^3.10.1",
     "draco3dgltf": "^1.5.7",
     "meshoptimizer": "^0.20.0",
+    "mikktspace": "^1.1.1",
     "sharp": "^0.33.2"
   }
 }

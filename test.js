@@ -6,6 +6,9 @@ import draco3d from "draco3dgltf";
 import { simplify, textureCompress, weld } from "@gltf-transform/functions";
 import { MeshoptSimplifier } from "meshoptimizer"; // 网格优化
 
+
+console.log(ALL_EXTENSIONS)
+
 // import sharp from "sharp"; // 纹理压缩
 // sharp的使用？
 // https://sharp.pixelplumbing.com/api-output#jpeg
@@ -14,8 +17,8 @@ import { MeshoptSimplifier } from "meshoptimizer"; // 网格优化
 const io = new NodeIO()
   .registerExtensions(ALL_EXTENSIONS)
   .registerDependencies({
-    "draco3d.decoder": await draco3d.createDecoderModule(), // Optional.
-    "draco3d.encoder": await draco3d.createEncoderModule(), // Optional.
+    "draco3d.decoder": await draco3d.createDecoderModule(),
+    "draco3d.encoder": await draco3d.createEncoderModule(),
   });
 
 // Read from URL.
@@ -26,9 +29,7 @@ let ratio = 0; // 优化比例
 let error = 0.001; // 误差
 
 await document.transform(
-  // 网格优化
-  weld({ tolerance: 0.0001 }), // 
-  // 网格优化
+  weld({ tolerance: 0.0001 }), // 顶点合并
   simplify({
     filter: (primitive) => {
       return primitive.getPointCount() > 100;
@@ -55,4 +56,4 @@ await document.transform(
 console.log("Done.");
 
 // 写入模型文件 并以draco格式压缩
-await io.write("./draco/output.drc", document, { dracoOptions: { compressionLevel: 1 } }); // 压缩等级 0-10
+await io.write("./draco/output.drc", document, { dracoOptions: { compressionLevel: 10 } }); // 压缩等级 0-10
