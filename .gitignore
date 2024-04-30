@@ -1,7 +1,20 @@
-# 忽略 node_modules 目录
-node_modules
-# 忽略 gltf 目录
-gltf
-# 忽略model、export目录
-model
-export
+/node_modules/
+/gltf/
+/model/
+/export/
+/draco/
+/map/
+/meshopt/
+# 忽略视频文件
+*.mp4
+
+# 忽略压缩文件
+*.zip
+*.rar
+
+# 忽略虚拟磁盘镜像文件
+*.iso
+
+# 忽略数据库备份文件
+*.bak
+*.sql
