@@ -80,7 +80,7 @@ await document.transform(
   // tangents({ generateTangents }), // 生成切线 会修复某些烘焙法线贴图出现的渲染问题
   textureCompress({
     targetFormat: "jpeg",
-    resize: [1024, 1024],
+    resize: [1024, 1024], 
   }) // 纹理压缩 格式可选 'jpeg', 'png', 'webp', 'avif'  resize: [1024, 1024] 纹理压缩后的纹理大小
   // backfaceCulling({ cull: true }), // 自定义背面剔除
   // sparse({ ratio: 1 / 10 }) // 稀疏化 ratio: 1 / 10 每10个顶点中只有一个顶点会被保留，其他顶点会被丢弃

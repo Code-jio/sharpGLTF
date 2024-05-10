@@ -75,6 +75,7 @@ export const findModel = (dir, files = []) => {
 
   return files;
 };
+
 /**
  * 验证权限后，逐个删除文件夹下的每个文件
  * @param {*} importDir 
@@ -121,7 +122,7 @@ export const getDracoModels = async (importDir, exportDir) => {
     await document.transform(
       draco({ compressionLevel: 10 }),
       textureCompress({
-        targetFormat: "jpg",
+        // targetFormat: "jpg",
         resize: [1024, 1024],
       }),
       prune() // 删除未使用的节点、纹理或其他数据
@@ -148,5 +149,3 @@ export const getDracoModels = async (importDir, exportDir) => {
     console.log(`转换完成：${file}`);
   }
 };
-
-
