@@ -1,5 +1,8 @@
 import fs from "fs";
 import path from "path";
+// 多线程
+import { Worker } from "worker_threads";
+import { copyFile } from "./threads.js";
 const fsp = fs.promises;
 
 import { Document, NodeIO, PropertyType } from "@gltf-transform/core";
@@ -33,26 +36,26 @@ import {
   vertexColorSpace,
 } from "@gltf-transform/functions";
 
-/**
- *
- * @param {String} src 源文件
- * @param {*} dest  复制文件
- */
-export const copyFile = async (sourceDirPath, destDirPath) => {
-  const dirFiles = fs.readdirSync(sourceDirPath);
-  // 递归遍历文件夹,记录所有文件路径，复制文件，并体现完整的文件层级结构
-  for (const file of dirFiles) {
-    const filePath = path.join(sourceDirPath, file);
-    const dest = path.join(destDirPath, file);
-    if (fs.statSync(filePath).isDirectory()) {
-      fs.mkdirSync(dest);
-      copyFile(filePath, dest);
-    } else {
-      fs.copyFileSync(filePath, dest);
-    }
-  }
-  console.log("复制完成");
-};
+// /**
+//  * 复制文件
+//  * @param {String} src 源文件
+//  * @param {*} dest  复制文件
+//  */
+// export const copyFile = async (sourceDirPath, destDirPath) => {
+//   const dirFiles = fs.readdirSync(sourceDirPath);
+//   // 递归遍历文件夹,记录所有文件路径，复制文件，并体现完整的文件层级结构
+//   for (const file of dirFiles) {
+//     const filePath = path.join(sourceDirPath, file);
+//     const dest = path.join(destDirPath, file);
+//     if (fs.statSync(filePath).isDirectory()) {
+//       fs.mkdirSync(dest);
+//       copyFile(filePath, dest);
+//     } else {
+//       fs.copyFileSync(filePath, dest);
+//     }
+//   }
+//   console.log("复制完成");
+// };
 
 /**
  *  递归查找文件夹下所有gltf文件,并记录文件路径
@@ -106,6 +109,7 @@ export const clearDir = async (importDir) => {
 // 获取所有gltf/glb文件，并将其复制到指定文件夹，将该文件件下的所有gltf/glb转为draco格式
 export const getDracoModels = async (importDir, exportDir) => {
   await clearDir(exportDir); // 清空目标目录下的所有文件
+  
   await copyFile(importDir, exportDir); // 复制文件夹
 
   const files = findModel(exportDir); // 获取所有gltf/glb文件
@@ -117,7 +121,7 @@ export const getDracoModels = async (importDir, exportDir) => {
     });
   await MeshoptEncoder.ready; // 等待meshoptimizer加载完成
   // 读取所有的gltf文件，并转为draco格式
-  for (const file of files) {
+  for (const file of files) {    
     let document = await io.read(file);
     await document.transform(
       draco({ compressionLevel: 10 }),
