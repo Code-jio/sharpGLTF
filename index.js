@@ -1,10 +1,10 @@
-// // 单线程模型文件转化
-// import { getDracoModels } from "./utils/tools.js";
+// 单线程模型文件转化
+import { getDracoModels } from "./utils/tools.js";
 
-// const sourcePath = "./map";
-// const targetPath = "./export";
+const sourcePath = "./map";
+const targetPath = "./export";
 
-// getDracoModels(sourcePath, targetPath);
+getDracoModels(sourcePath, targetPath);
 
 // // 多线程模型文件转化
 // import { Worker } from "worker_threads";

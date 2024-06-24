@@ -124,12 +124,12 @@ export const getDracoModels = async (importDir, exportDir) => {
   for (const file of files) {    
     let document = await io.read(file);
     await document.transform(
-      draco({ compressionLevel: 10 }),
+      // draco({ compressionLevel: 10 }),
       textureCompress({
         // targetFormat: "jpg",
         resize: [1024, 1024],
       }),
-      prune() // 删除未使用的节点、纹理或其他数据
+      // prune() // 删除未使用的节点、纹理或其他数据
     );
 
     // 先删除原文件所在目录下的所有文件(避免出现重复图片)
