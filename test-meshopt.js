@@ -7,7 +7,7 @@ import { simplify, textureCompress, weld } from "@gltf-transform/functions";
 import { MeshoptSimplifier } from "meshoptimizer"; // 网格优化
 
 
-console.log(ALL_EXTENSIONS)
+// console.log(ALL_EXTENSIONS)
 
 // import sharp from "sharp"; // 纹理压缩
 // sharp的使用？
@@ -25,7 +25,7 @@ const io = new NodeIO()
 let document = await io.read("./gltf/scene.glb");
 
 
-let ratio = 0; // 优化比例
+let ratio = 0.75; // 优化比例
 let error = 0.001; // 误差
 
 await document.transform(

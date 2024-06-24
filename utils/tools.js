@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 // 多线程
 import { Worker } from "worker_threads";
-import { copyFile } from "./threads.js";
+// import { copyFile } from "./threads.js";
 const fsp = fs.promises;
 
 import { Document, NodeIO, PropertyType } from "@gltf-transform/core";
@@ -10,10 +10,10 @@ import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import draco3d from "draco3dgltf";
 import { MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
 
-import { generateTangents } from "mikktspace";
-import sharp from "sharp";
+// import { generateTangents } from "mikktspace";
+// import sharp from "sharp";
 
-import { ready, resample as resampleWASM } from "keyframe-resample";
+// import { ready, resample as resampleWASM } from "keyframe-resample";
 import {
   resample,
   prune,
@@ -36,26 +36,26 @@ import {
   vertexColorSpace,
 } from "@gltf-transform/functions";
 
-// /**
-//  * 复制文件
-//  * @param {String} src 源文件
-//  * @param {*} dest  复制文件
-//  */
-// export const copyFile = async (sourceDirPath, destDirPath) => {
-//   const dirFiles = fs.readdirSync(sourceDirPath);
-//   // 递归遍历文件夹,记录所有文件路径，复制文件，并体现完整的文件层级结构
-//   for (const file of dirFiles) {
-//     const filePath = path.join(sourceDirPath, file);
-//     const dest = path.join(destDirPath, file);
-//     if (fs.statSync(filePath).isDirectory()) {
-//       fs.mkdirSync(dest);
-//       copyFile(filePath, dest);
-//     } else {
-//       fs.copyFileSync(filePath, dest);
-//     }
-//   }
-//   console.log("复制完成");
-// };
+/**
+ * 复制文件
+ * @param {String} src 源文件
+ * @param {*} dest  复制文件
+ */
+export const copyFile = async (sourceDirPath, destDirPath) => {
+  const dirFiles = fs.readdirSync(sourceDirPath);
+  // 递归遍历文件夹,记录所有文件路径，复制文件，并体现完整的文件层级结构
+  for (const file of dirFiles) {
+    const filePath = path.join(sourceDirPath, file);
+    const dest = path.join(destDirPath, file);
+    if (fs.statSync(filePath).isDirectory()) {
+      fs.mkdirSync(dest);
+      copyFile(filePath, dest);
+    } else {
+      fs.copyFileSync(filePath, dest);
+    }
+  }
+  console.log("复制完成");
+};
 
 /**
  *  递归查找文件夹下所有gltf文件,并记录文件路径
