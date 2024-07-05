@@ -72,19 +72,20 @@ await document.transform(
   // join({ keepNamed: false }), // 合并节点
   // normals({ overwrite: true }), // 重新计算法线 overwrite: true 会覆盖原有法线 重新计算法线可以修复法线方向错误的问题
   // partition({meshes: true}), // 分区 meshes: true 会将每个网格分区为多个子网格，以便更好地利用GPU缓存  这一步会将bin文件拆分
-  draco({ compressionLevel: 10 }), // 压缩等级 0-10 压缩等级越高，压缩率越高，但解压时间也越长
+  // draco({ compressionLevel: 10 }), // 压缩等级 0-10 压缩等级越高，压缩率越高，但解压时间也越长
   // vertexColorSpace({ inputColorSpace: "srgb" }), // 顶点颜色空间校正 inputColorSpace: 'srgb', 'linear' 顶点颜色空间转换
   // weld({ tolerance: 0.0001, toleranceNormal: 0.25 }), // 顶点合并 tolerance: 0.0001 顶点合并容差 toleranceNormal: 0.5 法线合并容差
   // reorder({ encoder: MeshoptEncoder, level: "medium" }), // 重新排序顶点索引 level: 'low', 'medium', 'high' 重新排序顶点索引可以提高渲染性能
   // simplify({ simplifier: MeshoptSimplifier, ratio: 0.75, error: 0.001 }), // 网格简化 ratio: 0.75 简化75% error: 0.001 误差限制为 0.01%。这一步是有损的 参数越大，简化率越高，但是会丢失更多的细节
   // tangents({ generateTangents }), // 生成切线 会修复某些烘焙法线贴图出现的渲染问题
   textureCompress({
-    targetFormat: "jpeg",
-    resize: [1024, 1024], 
+    // targetFormat: "jpeg",
+    resize: [1024, 1024],  // 纹理压缩后的纹理大小
   }) // 纹理压缩 格式可选 'jpeg', 'png', 'webp', 'avif'  resize: [1024, 1024] 纹理压缩后的纹理大小
   // backfaceCulling({ cull: true }), // 自定义背面剔除
   // sparse({ ratio: 1 / 10 }) // 稀疏化 ratio: 1 / 10 每10个顶点中只有一个顶点会被保留，其他顶点会被丢弃
 );
+
 // TODO：KTX2 纹理压缩
 
 // 自定义背面剔除

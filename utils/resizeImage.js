@@ -106,3 +106,12 @@ const resizeImage = (fPath, targetPath) => {
 };
 
 readDir(url, targetPath);
+
+
+// 根据命令行输入的参数，重置图片大小
+// 输入指令： hbg sharpImage
+// hbg表示node的执行文件，sharpImage表示当前文件
+
+console.log("args",  process.argv);
+
+export { readDir };

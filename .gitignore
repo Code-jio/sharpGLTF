@@ -5,6 +5,8 @@
 /draco/
 /map/
 /meshopt/
+/image/
+/image_resize/
 # 忽略视频文件
 *.mp4
 
