@@ -2,29 +2,28 @@
 import fs from "fs";
 import path from "path";
 import sharp from "sharp";
-
-const __dirname = path.resolve();
-
-const url = path.resolve(__dirname, "./image");
-const targetPath = path.resolve(__dirname, "./image_resize");
-
 // 循环遍历url下的所有文件
-const readDir = (url, targetPath) => {
+const readDir = (url) => {
   const files = fs.readdirSync(url);
   // console.log("开始重置图片大小", url, targetPath);
   for (const file of files) {
     const fPath = path.join(url, file);
     const stats = fs.statSync(fPath);
     if (stats.isDirectory()) {
-      readDir(fPath, targetPath);
+      readDir(fPath);
     } else {
       // 如果是图片文件
       if (
         fPath.endsWith(".png") ||
         fPath.endsWith(".jpg") ||
-        fPath.endsWith(".jpeg")
+        fPath.endsWith(".jpeg") ||
+        fPath.endsWith(".webp") ||
+        fPath.endsWith(".tiff") ||
+        fPath.endsWith(".gif") ||
+        fPath.endsWith(".svg") ||
+        fPath.endsWith(".avif")
       ) {
-        resizeImage(fPath, targetPath);
+        resizeImage(fPath);
       }
     }
   }
@@ -49,9 +48,7 @@ const isPowerOfTwo = (number) => {
 };
 
 // 重置图片大小,并写入到指定文件夹
-const resizeImage = (fPath, targetPath) => {
-  const fileName = path.basename(fPath);
-  const targetFile = path.join(targetPath, fileName);
+const resizeImage = (fPath) => {
   // 读取图片原有尺寸
   const image = sharp(fPath);
   image
@@ -90,7 +87,7 @@ const resizeImage = (fPath, targetPath) => {
 
       image
         .resize(newWidth, newHeight)
-        .toFile(targetFile)
+        .toFile(fPath) // 原地重置图片大小 会覆盖原图片
         .then((info) => {
           // console.log("重置图片大小完成", info);
         })
@@ -105,13 +102,13 @@ const resizeImage = (fPath, targetPath) => {
     });
 };
 
-readDir(url, targetPath);
+// readDir(url);
 
 
 // 根据命令行输入的参数，重置图片大小
 // 输入指令： hbg sharpImage
 // hbg表示node的执行文件，sharpImage表示当前文件
 
-console.log("args",  process.argv);
+// console.log("args",  process.argv);
 
 export { readDir };

@@ -17,7 +17,7 @@
     "draco3dgltf": "^1.5.7",
     "meshoptimizer": "^0.20.0",
     "mikktspace": "^1.1.1",
-    "sharp": "^0.33.4"
+    "sharp": "^0.32.6"
   },
   "optionalDependencies": {
     "@img/sharp-win32-x64": "^0.33.4"

@@ -1,5 +1,5 @@
 // 单线程模型文件转化
-import { getDracoModels } from "./utils/tools.js";
+import { getDracoModels,clearDir,copyFile } from "./utils/tools.js";
 import { readDir } from "./utils/resizeImage.js";
 import path from "path";
 
@@ -26,26 +26,41 @@ import path from "path";
 //   }
 // });
 
-// 根据指令执行文件转化
-const args = process.argv.slice(2);
-if (args.length === 0) {
-  console.log("请输入参数");
-} else {
-  if (args[0] === "sharp-image") {
-    console.log("开始转化图片");
+// // 根据指令执行文件转化
+// const args = process.argv.slice(2);
+// if (args.length === 0) {
+//   console.log("请输入参数");
+// } else {
+//   if (args[0] === "sharp-image") {
+//     console.log("开始转化图片");
 
-    const __dirname = path.resolve();
+//     const __dirname = path.resolve();
 
-    const url = path.resolve(__dirname, "./image");
-    const targetPath = path.resolve(__dirname, "./image_resize");
+//     const url = path.resolve(__dirname, "./image");
+//     const targetPath = path.resolve(__dirname, "./image_resize");
 
-    readDir(url, targetPath);
-  } else if (args[0] === "sharp-gltf") {
-    console.log("开始转化gltf文件");
+//     readDir(url, targetPath);
+//   } else if (args[0] === "sharp-gltf") {
+//     console.log("开始转化gltf文件");
 
-    const sourcePath = "./map";
-    const targetPath = "./export";
+//     const sourcePath = "./map";
+//     const targetPath = "./export";
 
-    getDracoModels(sourcePath, targetPath);
-  }
+//     getDracoModels(sourcePath, targetPath);
+//   }
+// }
+
+// 图片优化
+const optimizeImage = async () => {
+  const __dirname = path.resolve();
+
+  const url = path.resolve(__dirname, "./image");
+  const targetPath = path.resolve(__dirname, "./image_resize");
+
+  
+
+  // 清空targetPath文件夹
+  clearDir(targetPath)
+
+  readDir(url, targetPath);
 }
