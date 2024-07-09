@@ -1,8 +1,7 @@
 // 单线程模型文件转化
-import { getDracoModels,clearDir,copyFile } from "./utils/tools.js";
+import { getDracoModels, clearDir, copyFile, replaceFile } from "./utils/tools.js";
 import { readDir } from "./utils/resizeImage.js";
 import path from "path";
-
 
 // // 多线程模型文件转化
 // import { Worker } from "worker_threads";
@@ -57,10 +56,29 @@ const optimizeImage = async () => {
   const url = path.resolve(__dirname, "./image");
   const targetPath = path.resolve(__dirname, "./image_resize");
 
-  
-
   // 清空targetPath文件夹
-  clearDir(targetPath)
+  await clearDir(targetPath);
+  // 复制文件夹
+  await copyFile(url, targetPath);
+  // 读取文件夹
+  await readDir(url);
+};
+optimizeImage();
 
-  readDir(url, targetPath);
+
+const optimizeGltf = async () => {
+  const sourcePath = "./map";
+  const targetPath = "./export";
+
+  await getDracoModels(sourcePath, targetPath);
 }
+// optimizeGltf();
+
+// 替换文件
+const replaceFiles = async () => {
+  const sourcePath = "./export";
+  const targetPath = "D:/workSpace/work/GHTX-MK001_20240411 (8)/GHTX-MK001_20240411_down/data/GHTX-MK001";
+
+  await replaceFile(sourcePath, targetPath);
+}
+// replaceFiles();

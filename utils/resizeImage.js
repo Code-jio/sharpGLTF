@@ -8,6 +8,9 @@ const readDir = (url) => {
   // console.log("开始重置图片大小", url, targetPath);
   for (const file of files) {
     const fPath = path.join(url, file);
+
+    // 如果fPath包含shiwai-1||shiwai-2文件夹，则跳过
+
     const stats = fs.statSync(fPath);
     if (stats.isDirectory()) {
       readDir(fPath);
@@ -84,10 +87,10 @@ const resizeImage = (fPath) => {
 
       console.log("newWidth", newWidth, "newHeight", newHeight);
       // 如果图片宽高都小于1024，则不做处理
-
+      let newUrl = fPath.replace("image", "image_resize");
       image
         .resize(newWidth, newHeight)
-        .toFile(fPath) // 原地重置图片大小 会覆盖原图片
+        .toFile(newUrl) // 原地重置图片大小 会覆盖原图片
         .then((info) => {
           // console.log("重置图片大小完成", info);
         })

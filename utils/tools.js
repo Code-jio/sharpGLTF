@@ -111,44 +111,69 @@ export const getDracoModels = async (importDir, exportDir) => {
   
   await copyFile(importDir, exportDir); // 复制文件夹
 
-  const files = findModel(exportDir); // 获取所有gltf/glb文件
   const io = new NodeIO()
-    .registerExtensions(ALL_EXTENSIONS)
-    .registerDependencies({
-      "draco3d.decoder": await draco3d.createDecoderModule(),
-      "draco3d.encoder": await draco3d.createEncoderModule(),
-    });
+  .registerExtensions(ALL_EXTENSIONS)
+  .registerDependencies({
+    "draco3d.decoder": await draco3d.createDecoderModule(),
+    "draco3d.encoder": await draco3d.createEncoderModule(),
+  });
   await MeshoptEncoder.ready; // 等待meshoptimizer加载完成
+  const files = await findModel(exportDir); // 获取所有gltf/glb文件
   // 读取所有的gltf文件，并转为draco格式
   for (const file of files) {    
     let document = await io.read(file);
     await document.transform(
-      // draco({ compressionLevel: 10 }),
-      textureCompress({
+      draco({ compressionLevel: 10 }), // draco压缩
+      // textureCompress({
         // targetFormat: "jpg",
-        resize: [1024, 1024],
-      }),
+        // resize: [1024, 1024],
+      // }),
       // prune() // 删除未使用的节点、纹理或其他数据
     );
 
-    // 先删除原文件所在目录下的所有文件(避免出现重复图片)
-    const dir = path.dirname(file);
-    const dirFiles = fs.readdirSync(dir);
-    for (const file of dirFiles) {
-      const filePath = path.join(dir, file);
-      if (
-        fs.statSync(filePath).isFile &&
-        (file.endsWith(".jpg") ||
-          file.endsWith(".png") ||
-          file.endsWith(".jpeg"))
-      ) {
-        fs.unlinkSync(filePath);
-        console.log(`删除文件：${filePath}`);
-      }
-    }
+    // // 先删除原文件所在目录下的所有文件(避免出现重复图片)
+    // const dir = path.dirname(file);
+    // const dirFiles = fs.readdirSync(dir);
+    // for (const file of dirFiles) {
+    //   const filePath = path.join(dir, file);
+    //   if (
+    //     fs.statSync(filePath).isFile &&
+    //     (file.endsWith(".jpg") ||
+    //       file.endsWith(".png") ||
+    //       file.endsWith(".jpeg"))
+    //   ) {
+    //     fs.unlinkSync(filePath);
+    //     console.log(`删除文件：${filePath}`);
+    //   }
+    // }
 
     // 转为gltf格式并覆盖原文件
     await io.write(file, document);
     console.log(`转换完成：${file}`);
   }
 };
+
+/**
+ * 查找文件夹下的所有gltf文件，将其复制到指定文件夹
+ * @param {String} importDir 原文件夹
+ * @param {String} targetDir 目标文件夹
+ */
+export const replaceFile = async (importDir, targetDir) => {
+  // 递归查找importDir底下所有的gltf文件
+  const files = findModel(importDir);
+  for (const file of files) {
+    // 提取文件名
+    const fileName = path.basename(file);
+    // 在targetDir底下递归查找同名文件
+    const targetFiles = findModel(targetDir);
+    for (const targetFile of targetFiles) {
+      // 如果找到同名文件，则删除
+      if (path.basename(targetFile) === fileName) {
+        // 删除同名文件，将importDir底下的同名文件复制到targetDir
+        fs.unlinkSync(targetFile);
+        fs.copyFileSync(file, targetFile);
+        console.log(`替换文件：${targetFile}`);
+      }
+    }
+  }
+}
