@@ -123,7 +123,7 @@ export const getDracoModels = async (importDir, exportDir) => {
   for (const file of files) {    
     let document = await io.read(file);
     await document.transform(
-      draco({ compressionLevel: 10 }), // draco压缩
+      // draco({ compressionLevel: 10 }), // draco压缩
       // textureCompress({
         // targetFormat: "jpg",
         // resize: [1024, 1024],

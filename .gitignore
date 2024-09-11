@@ -7,6 +7,7 @@
 /meshopt/
 /image/
 /image_resize/
+/screenshot638/
 # 忽略视频文件
 *.mp4
 

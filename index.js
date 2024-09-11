@@ -1,6 +1,13 @@
 // 单线程模型文件转化
-import { getDracoModels, clearDir, copyFile, replaceFile } from "./utils/tools.js";
+import {
+  getDracoModels,
+  clearDir,
+  copyFile,
+  replaceFile,
+} from "./utils/tools.js";
+import fs from "fs";
 import { readDir } from "./utils/resizeImage.js";
+import imageJoint from "./utils/imageJoint.js";
 import path from "path";
 
 // // 多线程模型文件转化
@@ -63,22 +70,58 @@ const optimizeImage = async () => {
   // 读取文件夹
   await readDir(url);
 };
-optimizeImage();
-
+// optimizeImage();
 
 const optimizeGltf = async () => {
   const sourcePath = "./map";
   const targetPath = "./export";
 
   await getDracoModels(sourcePath, targetPath);
-}
+};
 // optimizeGltf();
 
 // 替换文件
 const replaceFiles = async () => {
   const sourcePath = "./export";
-  const targetPath = "D:/workSpace/work/GHTX-MK001_20240411 (8)/GHTX-MK001_20240411_down/data/GHTX-MK001";
+  const targetPath =
+    "D:/workSpace/work/GHTX-MK001_20240411 (8)/GHTX-MK001_20240411_down/data/GHTX-MK001";
 
   await replaceFile(sourcePath, targetPath);
-}
+};
 // replaceFiles();
+
+// 图片拼接 imageJoint
+const jointImage = async () => {
+  const __dirname = path.resolve();
+  const url = path.resolve(__dirname, "./screenshot638");
+
+  const targetPath = path.resolve(__dirname, "./image_joint/res.png");
+  const images = [];
+  // 提取所有图片文件的url
+  const files = fs.readdirSync(url);
+  for (const file of files) {
+    const fPath = path.join(url, file);
+    // 如果是图片文件
+    if (
+      fPath.endsWith(".png") ||
+      fPath.endsWith(".jpg") ||
+      fPath.endsWith(".jpeg") ||
+      fPath.endsWith(".webp") ||
+      fPath.endsWith(".tiff") ||
+      fPath.endsWith(".gif") ||
+      fPath.endsWith(".svg") ||
+      fPath.endsWith(".avif")
+    ) {
+      images.push(fPath);
+    }
+  }
+
+  // console.log("images", images);
+
+  // 每行显示的图片数量
+  const row = 29;
+  const column = 22;
+  // 图片拼接
+  await imageJoint(images, targetPath, row, column);
+};
+jointImage();

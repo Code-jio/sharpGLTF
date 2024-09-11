@@ -5,7 +5,7 @@ import path from "path";
 const dir = "./export/";
 const files = fs.readdirSync(dir);
 
-import { copyFiles, findModel } from "./utils/tools.js";
+// import { copyFiles, findModel } from "./utils/tools.js";
 
 import { Document, NodeIO, PropertyType } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
@@ -15,7 +15,7 @@ import { MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
 import { generateTangents } from "mikktspace";
 import sharp from "sharp";
 
-import { ready, resample as resampleWASM } from "keyframe-resample";
+// import { ready, resample as resampleWASM } from "keyframe-resample";
 import {
   resample,
   prune,
@@ -50,7 +50,7 @@ const io = new NodeIO()
 await MeshoptEncoder.ready; // 等待meshoptimizer加载完成
 
 // Read from URL.
-let document = await io.read("./model/shiwai-1/shiwai-1.gltf");
+let document = await io.read("./map/glb/Soldier.glb");
 
 await document.transform(
   // palette({ min: 5 }), // 调色板 min: 5 最小颜色数量 减少颜色数量可以减少文件大小
@@ -99,10 +99,11 @@ function backfaceCulling(options) {
 
 console.log("done"); // 完成提示
 
-// 清空./export/文件
+// 清空./export/文件 
+// TODO: 优化清空文件夹方法->递归删除文件夹下的所有文件，规避文件权限问题
 for (const file of files) {
   fs.unlinkSync(path.join(dir, file));
 }
 
 // 写入
-await io.write("./draco/shiwai-1.gltf", document);
+await io.write("./export/glb/Soldier.gltf", document);
