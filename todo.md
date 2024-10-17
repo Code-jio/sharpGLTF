@@ -2764,3 +2764,44 @@ jsdy-1项目室内模型加载性能分析：
 
 
 
+## 10.16
+
+第一次场景构建的时候不会触发load内部的onLoad回调、也不会触发onError回调
+
+
+
+parse函数不会触发
+
+
+
+
+
+mergeQueue方向入手
+
+并没有加入到modelStore里面去所以不会触发startLoadModelsByFLoor后续的加载逻辑
+
+
+
+
+
+在首次加载第一个模型时，可以顺利进入preFetchModel3D中，能够成功生成模型的3D对象但是后续逻辑中断，无法顺利进入onLoad或者onError回调中，所以无法顺利加入modelStore，自然在每一帧更新时触发的startLoadModelsByFLoor函数中无法加载该模型
+
+
+
+分析jsdy-1项目室内模型加载流程，梳理GLTFLoader模型加载逻辑的代码执行过程，审查gltf文件解析器中的promise嵌套逻辑链，重构gltfloader部分解析逻辑。
+
+
+
+问题：初次加载流程中，模型文件解析逻辑模糊，程序执行后未成功进入指定分支导致模型未成功加载。
+
+
+
+
+
+## 10.17
+
+审查SDK城市地图部分的模型加载逻辑，排查SDK3.1部分功能的疑问代码。
+
+将SDK7月至8月代码更新同步至SDK3.1
+
+分析jsdy-1项目室内模型加载流程，梳理GLTFLoader模型解析与加载逻辑的promise代码执行过程，审查gltf文件解析器中的promise嵌套逻辑链，重构gltfloader部分解析逻辑。
