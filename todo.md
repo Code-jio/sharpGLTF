@@ -1838,7 +1838,22 @@ void main() {
 
 - [ ] 绘制导航箭头shader：绘制外围圆环，及四周文字，绘制外围有色圆弧
 - [ ] 测试SDK3.1版本升级后的百度地图、高德地图跳转室内三维场景示例
-- [ ] 
+
+
+
+我不方便在你这里待太久， 我也明白或许未来几个月里你可能就会嫁人，但是有一件事情我还是要说出来。
+
+17年初，你告诉我你在家里被爸爸家暴，还被妈妈排挤，
+
+我那时候确实心疼坏了，但是在高三那个特殊的时期我没有额外的时间和精力安慰你，当时的我心理压力也已经到了极限了，也确实没有办法好好处理这件事情，一直到高考结束心里的情绪才爆发出来，所以才说出了那么过分的话
+
+这也是我21年和23年那两通电话里想对你说的话
+
+我见不了你嫁人的场景，也摆脱不了这种状态了
+
+没有理由在你好友列表里待那么久，也确实不太方便
+
+
 
 ## 6.27
 
@@ -1866,9 +1881,7 @@ SDK3.1 worlddemo测试记录：
 
 - [ ] 点击百度地图、高德地图跳转城市三维场景示例 baiduDemo.html （底图插件）		![image-20240627153536611](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20240627153536611.png)
 
-- [ ] 基本三维场景示例 basic.html (特效文件问题)
-
-  ![image-20240627143537242](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20240627143537242.png)
+- [ ] 基本三维场景示例 basic.html (特效文件问题)![image-20240627143537242](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20240627143537242.png)
 
 - [ ] 
   controller-inertia.html （底图及特效插件）![image-20240627153647187](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20240627153647187.png)
@@ -2800,8 +2813,185 @@ mergeQueue方向入手
 
 ## 10.17
 
-审查SDK城市地图部分的模型加载逻辑，排查SDK3.1部分功能的疑问代码。
+审查SDK城市地图部分的模型加载及事件触发逻辑，排查SDK3.1部分功能的疑问代码。
 
 将SDK7月至8月代码更新同步至SDK3.1
 
 分析jsdy-1项目室内模型加载流程，梳理GLTFLoader模型解析与加载逻辑的promise代码执行过程，审查gltf文件解析器中的promise嵌套逻辑链，重构gltfloader部分解析逻辑。
+
+
+
+## 10.18
+
+分析jsdy-1项目室内模型加载流程，逐步调试、审查gltf模型各部分数据解析流程，检查gltf文件解析器中的promise嵌套逻辑链，排查promise函数不返回相应值的原因，针对部分异步调用重构逻辑
+
+
+
+## 10.21
+
+模型加载流程：
+
+1. **初始化和路径设置**
+   - 检查并设置资源路径 (`resourcePath`)。
+   - 通知 `LoadingManager` 开始加载一个新项目。
+2. **错误处理**
+   - 定义 `_onError` 函数来处理加载错误。
+3. **文件加载**
+   - 使用 `THREE.FileLoader` 加载文件。
+   - 设置路径和响应类型为 `arraybuffer`。
+   - 调用 `loader.load` 方法加载文件。
+4. **数据解析**
+   - 在文件加载成功后，调用 `scope.parse` 方法解析数据。
+   - 解析数据内容，处理二进制和文本格式。
+   - 检查和处理版本信息。
+   - 验证数据的完整性和授权信息。
+5. **扩展处理**
+   - 处理 GLTF 扩展，如 `KHR_LIGHTS_PUNCTUAL`、`KHR_MATERIALS_UNLIT` 等。
+6. **创建解析器**
+   - 创建 `GLTFParser` 实例。
+   - 解析 GLTF 数据，生成场景、相机、动画等。
+7. **回调**
+   - 调用 `onLoad` 回调函数，传递解析后的 GLTF 对象。
+
+
+
+以下是`GLTFParser`类的工作流程和具体细节：
+
+#### 1. 初始化
+
+- 构造函数 `GLTFParser`
+  - 初始化 JSON 数据、扩展和选项。
+  - 创建一个 `GLTFRegistry` 实例用于缓存加载的对象。
+  - 初始化缓存数组：`primitiveCache`、`multiplePrimitivesCache` 和 `multiPassGeometryCache`。
+  - 创建 `THREE.TextureLoader` 实例并设置跨域选项。
+  - 创建 `THREE.FileLoader` 实例并设置响应类型为 `arraybuffer`。
+
+#### 2. 解析方法
+
+- 方法 `parse`
+  - 接受两个回调函数参数：`onLoad` 和 `onError`。
+  - 获取 JSON 数据。
+  - 检查  数据中是否包含特定文件（如 `zhixiang-03.gltf`），并打印日志。
+  - 清空缓存。
+  - 调用 `markDefs` 方法标记特殊的节点和网格。
+  - 调用 `getMultiDependencies` 方法获取场景、动画和相机的依赖项。
+  - 在依赖项加载完成后，调用 `onLoad` 回调函数，传递解析后的场景、动画、相机和 JSON 数据。
+  - 如果加载过程中出现错误，调用 `onError` 回调函数。
+
+
+
+
+
+
+
+解决措施：
+
+采用[`Promise.allSettled()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled)记录Promise处理结果，针对目前存在的promise没有返回预取结果的情况（promise状态无法从pending转为其他状态的问题）时，主动返回一个reject状态的promise对象
+
+实施难点：allSettled方法仅在node12.9.0版本或更新的版本中存在。
+
+
+
+
+
+今日流程梳理时，在进行到特定模型时未出现promise状态无法从pending转为其他状态的问题，正确返回了result对象，但是对应的模型依然没有加载。
+
+
+
+
+
+## 10.22
+
+1.重新整理ESMarkerCluster点聚合类相关流程，清除使用流程中不合理的部分
+
+2.更新ESMarkerCluster中标注部分设置，更新至现SDK
+
+3.当聚合标注仅仅只包含一个标注时，查找原有标注点位及相关配置，并将其添加至对应图层中。
+
+
+
+1.获取目标标注对应的图层
+
+
+
+## 10.23
+
+完成建设目标标注对应的图层及相应的创建逻辑，完成点聚合插件的优化工作。
+
+解决其在高显示层级时对原始标注的显隐控制问题，解决点聚合插件在标注类型方面的兼容性问题。
+
+重构标注碰撞检测collideLabel接口部分逻辑
+
+
+
+## 10.24
+
+梳理原有城市地图scaleLevel与zoomLevel混用带来的标签显隐问题
+
+新增标注聚合插件逻辑配置调整最小聚合量，优化最小缩放层级下的标签显示问题。
+
+调整标注聚合插件内添加标注的时机避免出现标注闪烁问题。
+
+
+
+
+
+
+
+框选时 不选中已经隐藏的物体 
+
+## 10.25
+
+梳理原有城市地图scaleLevel与zoomLevel混用带来的标签显隐问题
+
+调整点聚合插件再添加原始标注时的筛选逻辑与流程
+
+细化碰撞检测机制的标注显隐逻辑，重构原来的MapBoxCollision类，并调整碰撞元素数组的push逻辑，解决特定标签被遮挡的问题
+
+
+
+实现框选时不能选中已经隐藏的物体
+
+碰撞检测中出现个别标签无法被碰撞隐藏的问题
+
+
+
+
+
+## 10.28
+
+实现框选时不能选中已经隐藏的物体
+
+调整点聚合插件再添加原始标注时的筛选逻辑与流程,限制加入标注的最大数量
+
+
+## 10.29
+
+细化碰撞检测机制的标注显隐逻辑，重构原来的MapBoxCollision类碰撞判断逻辑，解决碰撞检测中出现个别标签无法被碰撞隐藏的问题
+
+针对点聚合标注在某一倾斜视角下，视野内会渲染大量聚类气泡导致的性能问题出具相关技术解决方案，并实施
+
+
+
+如果发生碰撞就隐藏标注，标注被隐藏后还需要进行碰撞检测，如果没有和其他标注发生碰撞的话就得显示
+
+
+
+
+
+
+
+``````javascript
+ isCollision(boxA, boxB) {
+  return (
+   // boxB.size <= boxA.size &&
+   boxA.x < boxB.x + boxB.width / 2 &&
+   boxA.x + boxA.width / 2 > boxB.x &&
+   boxA.y < boxB.y + boxB.height / 2 &&
+   boxA.y + boxA.height / 2 > boxB.y
+  );
+ }
+``````
+
+
+
