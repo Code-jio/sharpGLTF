@@ -109,7 +109,7 @@ const jointImage = async () => {
       fPath.endsWith(".webp") ||
       fPath.endsWith(".tiff") ||
       fPath.endsWith(".gif") ||
-      fPath.endsWith(".svg") ||
+      fPath.endsWith(".svg")  ||
       fPath.endsWith(".avif")
     ) {
       images.push(fPath);
