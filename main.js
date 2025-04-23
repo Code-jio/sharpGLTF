@@ -23,6 +23,8 @@ async function optimizeModel(inputPath, outputPath) {
     });
 
   await MeshoptEncoder.ready;
+//   await MeshoptEncoder.registerEncoder();
+//   await MeshoptEncoder.registerDecoder();
   const document = await io.read(inputPath);
 
   await optimizePipeline(document);

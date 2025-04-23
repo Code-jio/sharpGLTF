@@ -1,7 +1,6 @@
 import { generateTangents } from "mikktspace";
 import { resample as resampleWASM } from "keyframe-resample";
 import {
-  mergeBuffers,
   resample,
   prune,
   dedup,
@@ -18,6 +17,7 @@ import {
 } from "@gltf-transform/functions";
 import { MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
 import { PropertyType } from "@gltf-transform/core";
+// import { KTXSTextureFormat } from "@gltf-transform/extensions";
 
 export async function optimizePipeline(document) {
   await document.transform(
@@ -34,13 +34,14 @@ export async function optimizePipeline(document) {
         PropertyType.SKIN,
       ],
     }), // 去重
-    instance({ min: 2 }), // 实例化
-    mergeBuffers(), // 合并缓冲区
+    instance({ min: 2 }), // 实例化  可以减少文件大小 但是会导致动画不流畅 暂时不启用
     draco({ compressionLevel: 7 }), // draco压缩
     textureCompress({
       // targetFormat: "ktx2",
-      resize: [1024, 1024], // 纹理压缩
-    }), // 纹理压缩
+      resize: [1024, 1024],
+      // }).registerDependencies({
+      //   'ktx-software': KTXSTextureFormat,
+    }), // 启用KTX2压缩
     simplify({
       simplifier: MeshoptSimplifier, // 使用meshoptimizer简化
       ratio: 0.75, // 简化比例 0.75 表示简化75%的顶点
@@ -48,8 +49,8 @@ export async function optimizePipeline(document) {
       filter: (primitive) => primitive.getPointCount() > 100, // 过滤条件 只对顶点数量大于100的几何体进行简化
     }),
     reorder({ encoder: MeshoptEncoder, level: "high" }), // 重排序
-    weld({ tolerance: 0.00001, toleranceNormal: 0.25 }), // 初步顶点合并
-    partition({ meshes: true }), // 二进制数据分块
+    weld({ tolerance: 0.001, toleranceNormal: 0.25 }), // 调整顶点合并容差
+    // partition({ meshes: true, minSize: 2 }), // 启用分块功能  // TODO： 该功能有问题
     weld({
       tolerance: 0.00001,
       toleranceNormal: 0.1,
