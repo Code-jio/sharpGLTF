@@ -5,8 +5,6 @@ import path from "path";
 const dir = "./export/";
 const files = fs.readdirSync(dir);
 
-// import { copyFiles, findModel } from "./utils/tools.js";
-
 import { Document, NodeIO, PropertyType } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import draco3d from "draco3dgltf";
