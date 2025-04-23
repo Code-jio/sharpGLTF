@@ -1,6 +1,7 @@
 import { generateTangents } from "mikktspace";
 import { resample as resampleWASM } from "keyframe-resample";
 import {
+  mergeBuffers,
   resample,
   prune,
   dedup,
@@ -34,8 +35,12 @@ export async function optimizePipeline(document) {
       ],
     }), // 去重
     instance({ min: 2 }), // 实例化
+    mergeBuffers(), // 合并缓冲区
     draco({ compressionLevel: 7 }), // draco压缩
-    textureCompress({ targetFormat: "ktx2", resize: [1024, 1024] }), // 纹理压缩
+    textureCompress({
+      // targetFormat: "ktx2",
+      resize: [1024, 1024], // 纹理压缩
+    }), // 纹理压缩
     simplify({
       simplifier: MeshoptSimplifier, // 使用meshoptimizer简化
       ratio: 0.75, // 简化比例 0.75 表示简化75%的顶点
@@ -55,8 +60,12 @@ export async function optimizePipeline(document) {
         );
       },
     }), // 重排序后再次合并
-    weld({ tolerance: 0.000001, overwrite: true, reportStatistics: console.log }), // 最终顶点合并验证
+    weld({
+      tolerance: 0.000001,
+      overwrite: true,
+      reportStatistics: console.log,
+    }), // 最终顶点合并验证
     tangents({ generateTangents }) // 生成切线
   );
-  console.log('顶点合并验证通过')
+  console.log("顶点合并验证通过");
 }

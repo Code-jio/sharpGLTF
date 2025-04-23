@@ -4,7 +4,7 @@ import { NodeIO } from '@gltf-transform/core';
 import { optimizePipeline } from './optimize-pipeline.js';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
-import { BasisEncoder, BasisTranscoder } from '@gltf-transform/extensions';
+// import { KHRONOS_texture_basisu } from '@gltf-transform/ktx2';
 import * as draco3d from 'draco3dgltf';
 
 // 模型优化处理函数
@@ -12,15 +12,14 @@ async function optimizeModel(inputPath, outputPath) {
   const io = new NodeIO()
     .registerExtensions([
       ...ALL_EXTENSIONS,
-      'KHRONOS_texture_basisu'
+    //   KHRONOS_texture_basisu
     ])
     .registerDependencies({
       "draco3d.decoder": await draco3d.createDecoderModule(),
       "draco3d.encoder": await draco3d.createEncoderModule(),
       "meshopt.decoder": MeshoptEncoder,
       "meshopt.encoder": MeshoptSimplifier,
-      "ktx-encoder.basis": BasisEncoder,
-      "ktx-encoder.transcoder": BasisTranscoder
+    //   "ktx-framework": new KHRONOS_texture_basisu()
     });
 
   await MeshoptEncoder.ready;
