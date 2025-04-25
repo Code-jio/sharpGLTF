@@ -4,7 +4,7 @@ import {
   clearDir,
   copyFile,
   replaceFile,
-} from "./utils/tools.js";
+} from "../utils/tools.js";
 import fs from "fs";
 import { readDir } from "./utils/resizeImage.js";
 import imageJoint from "./utils/imageJoint.js";

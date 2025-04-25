@@ -34,8 +34,8 @@ export async function optimizePipeline(document) {
         PropertyType.SKIN,
       ],
     }), // 去重
-    instance({ min: 2 }), // 实例化  可以减少文件大小 但是会导致动画不流畅 暂时不启用
-    draco({ compressionLevel: 7 }), // draco压缩
+    // instance({ min: 2 }), // 实例化  可以减少文件大小 但是会导致动画不流畅 暂时不启用
+    draco({ compressionLevel: 1 }),
     textureCompress({
       // targetFormat: "ktx2",
       resize: [1024, 1024],
@@ -43,13 +43,13 @@ export async function optimizePipeline(document) {
       //   'ktx-software': KTXSTextureFormat,
     }), // 启用KTX2压缩
     simplify({
-      simplifier: MeshoptSimplifier, // 使用meshoptimizer简化
-      ratio: 0.75, // 简化比例 0.75 表示简化75%的顶点
-      error: 0.001, // 简化误差 0.001 表示简化误差小于0.001的顶点
-      filter: (primitive) => primitive.getPointCount() > 100, // 过滤条件 只对顶点数量大于100的几何体进行简化
+      simplifier: MeshoptSimplifier,
+      ratio: 0.75, // 简化比例 0.75
+      error: 0.001, // 简化误差 0.001
+      filter: (primitive) => primitive.getPointCount() > 100,
     }),
     reorder({ encoder: MeshoptEncoder, level: "high" }), // 重排序
-    weld({ tolerance: 0.001, toleranceNormal: 0.25 }), // 调整顶点合并容差
+    weld({ tolerance: 0.001, toleranceNormal: 0.25 }), 
     // partition({ meshes: true, minSize: 2 }), // 启用分块功能  // TODO： 该功能有问题
     weld({
       tolerance: 0.00001,
