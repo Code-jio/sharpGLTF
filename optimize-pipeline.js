@@ -37,7 +37,7 @@ export async function optimizePipeline(document) {
     // instance({ min: 2 }), // 实例化  可以减少文件大小 但是会导致动画不流畅 暂时不启用
     draco({ compressionLevel: 1 }),
     textureCompress({
-      // targetFormat: "ktx2",
+      targetFormat: "webp",
       resize: [1024, 1024],
       // }).registerDependencies({
       //   'ktx-software': KTXSTextureFormat,
