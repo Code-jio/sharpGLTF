@@ -1,19 +1,19 @@
 import { generateTangents } from "mikktspace";
 import { resample as resampleWASM } from "keyframe-resample";
 import {
-  resample,
-  prune,
-  dedup,
-  draco,
-  palette,
-  reorder,
-  simplify,
-  weld,
-  tangents,
-  textureCompress,
-  instance,
-  vertexColorSpace,
-  partition,
+  resample, // 重采样
+  prune, // 删除未使用的节点、纹理或其他数据
+  dedup, // 去重
+  draco, // 压缩
+  palette, // 减少颜色数量 减少文件大小
+  reorder, // 重排序
+  simplify, // 简化
+  weld, // 合并顶点
+  tangents, // 生成切线
+  textureCompress, // 纹理压缩
+  instance, // 实例化 
+  vertexColorSpace, // 色彩空间校正
+  partition, // 分块
 } from "@gltf-transform/functions";
 import { MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
 import { PropertyType } from "@gltf-transform/core";
@@ -34,8 +34,8 @@ export async function optimizePipeline(document) {
         PropertyType.SKIN,
       ],
     }), // 去重
-    // instance({ min: 2 }), // 实例化  可以减少文件大小 但是会导致动画不流畅 暂时不启用
-    draco({ compressionLevel: 1 }),
+    instance({ min: 2 }), // 实例化
+    draco({ compressionLevel: 10 }), // 启用draco压缩 
     textureCompress({
       targetFormat: "webp",
       resize: [1024, 1024],
@@ -50,13 +50,13 @@ export async function optimizePipeline(document) {
     }),
     reorder({ encoder: MeshoptEncoder, level: "high" }), // 重排序
     weld({ tolerance: 0.001, toleranceNormal: 0.25 }), 
-    // partition({ meshes: true, minSize: 2 }), // 启用分块功能  // TODO： 该功能有问题
+    partition({ meshes: true, minSize: 2 }), // 启用分块功能
     weld({
       tolerance: 0.00001,
       toleranceNormal: 0.1,
       onComplete: (stats) => {
         console.log(
-          `Welded ${stats.original} vertices to ${stats.merged} vertices.`, // 输出合并后的顶点数量
+          `合并 ${stats.original} 顶点数到 ${stats.merged} 顶点数.`, // 输出合并后的顶点数量
           stats
         );
       },
