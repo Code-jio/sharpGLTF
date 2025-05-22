@@ -9,6 +9,7 @@ import {
   reorder, // 重排序
   simplify, // 简化
   weld, // 合并顶点
+  unweld,
   tangents, // 生成切线
   textureCompress, // 纹理压缩
   instance, // 实例化 
@@ -51,6 +52,8 @@ export async function optimizePipeline(document) {
     reorder({ encoder: MeshoptEncoder, level: "high" }), // 重排序
     weld({ tolerance: 0.001, toleranceNormal: 0.25 }), 
     partition({ meshes: true, minSize: 2 }), // 启用分块功能
+    unweld(),
+    tangents({ generateTangents }), // 生成切线
     weld({
       tolerance: 0.00001,
       toleranceNormal: 0.1,
@@ -66,7 +69,6 @@ export async function optimizePipeline(document) {
       overwrite: true,
       reportStatistics: console.log,
     }), // 最终顶点合并验证
-    tangents({ generateTangents }) // 生成切线
   );
   console.log("顶点合并验证通过");
 }

@@ -55,6 +55,7 @@ async function optimizeModel(inputPath, outputPath, generateLODLevels = false) {
 // 批量处理入口
 async function processModels(generateLOD = false) {
   const SOURCE_DIR = './model';
+  // const SOURCE_DIR = './test';
   const TARGET_DIR = './export';
 
   try {
