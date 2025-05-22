@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>简单模型查看器</title>
+    <style>
+        body { margin: 0; }
+        #container { width: 100%; height: 100vh; }
+        #stats-panel {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            z-index: 100;
+        }
+        #controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            z-index: 100;
+        }
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+            width: 120px;
+            background: #444;
+            color: white;
+            border: 1px solid #666;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #555;
+        }
+        button.active {
+            background: #666;
+            border-color: #888;
+        }
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: monospace;
+            font-size: 24px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <div id="stats-panel">
+        <div>顶点数: <span id="vertices">0</span></div>
+        <div>面数: <span id="triangles">0</span></div>
+        <div>绘制调用: <span id="drawCalls">0</span></div>
+    </div>
+    <div id="controls">
+        <button id="toggle-grid">显示网格</button>
+        <button id="toggle-wireframe">显示线框</button>
+        <button id="toggle-axes">显示坐标轴</button>
+    </div>
+    <div id="loading-screen">加载中...</div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+        import Stats from 'three/addons/libs/stats.module.js';
+
+        class SimpleModelViewer {
+            constructor() {
+                this.container = document.getElementById('container');
+                this.loadingScreen = document.getElementById('loading-screen');
+                
+                // 初始化场景
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x333333);
+                
+                // 初始化相机
+                this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+                this.camera.position.set(0, 2, 5);
+                
+                // 初始化渲染器
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.shadowMap.enabled = true;
+                this.container.appendChild(this.renderer.domElement);
+                
+                // 初始化控制器
+                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;
+                
+                // 初始化性能监视器
+                this.stats = new Stats();
+                this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+                this.stats.dom.style.cssText = 'position:fixed;top:90px;left:10px;';
+                document.body.appendChild(this.stats.dom);
+                
+                // 初始化加载器
+                this.initLoaders();
+                
+                // 添加灯光
+                this.addLights();
+                
+                // 初始化辅助对象
+                this.initHelpers();
+                
+                // 当前加载的模型
+                this.currentModel = null;
+                
+                // 绑定事件
+                this.initControls();
+                window.addEventListener('resize', this.onWindowResize.bind(this), false);
+                
+                // 开始动画循环
+                this.animate();
+                
+                // 将实例暴露给全局
+                window.viewer = this;
+                
+                // 自动加载模型
+                this.loadModel();
+            }
+            
+            initHelpers() {
+                // 网格
+                this.gridHelper = new THREE.GridHelper(10, 10);
+                this.gridHelper.visible = false;
+                this.scene.add(this.gridHelper);
+                
+                // 坐标轴
+                this.axesHelper = new THREE.AxesHelper(5);
+                this.axesHelper.visible = false;
+                this.scene.add(this.axesHelper);
+            }
+            
+            initControls() {
+                // 网格显示控制
+                const toggleGrid = document.getElementById('toggle-grid');
+                toggleGrid.addEventListener('click', () => {
+                    this.gridHelper.visible = !this.gridHelper.visible;
+                    toggleGrid.classList.toggle('active');
+                    toggleGrid.textContent = this.gridHelper.visible ? '隐藏网格' : '显示网格';
+                });
+                
+                // 线框显示控制
+                const toggleWireframe = document.getElementById('toggle-wireframe');
+                toggleWireframe.addEventListener('click', () => {
+                    if (this.currentModel) {
+                        const isWireframe = toggleWireframe.classList.contains('active');
+                        this.currentModel.traverse((child) => {
+                            if (child.isMesh) {
+                                child.material.wireframe = !isWireframe;
+                            }
+                        });
+                        toggleWireframe.classList.toggle('active');
+                        toggleWireframe.textContent = isWireframe ? '显示线框' : '隐藏线框';
+                    }
+                });
+                
+                // 坐标轴显示控制
+                const toggleAxes = document.getElementById('toggle-axes');
+                toggleAxes.addEventListener('click', () => {
+                    this.axesHelper.visible = !this.axesHelper.visible;
+                    toggleAxes.classList.toggle('active');
+                    toggleAxes.textContent = this.axesHelper.visible ? '隐藏坐标轴' : '显示坐标轴';
+                });
+            }
+            
+            initLoaders() {
+                // 初始化DRACO加载器
+                const dracoLoader = new DRACOLoader();
+                dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
+                
+                // 初始化GLTF加载器
+                this.loader = new GLTFLoader();
+                this.loader.setDRACOLoader(dracoLoader);
+            }
+            
+            addLights() {
+                // 环境光
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                this.scene.add(ambientLight);
+                
+                // 主光源
+                const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+                mainLight.position.set(5, 5, 5);
+                mainLight.castShadow = true;
+                this.scene.add(mainLight);
+                
+                // 补光
+                const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+                fillLight.position.set(-5, 5, -5);
+                this.scene.add(fillLight);
+            }
+            
+            async loadModel() {
+                const modelUrl = '../model/5.22/01-1.gltf';
+                this.loadingScreen.style.display = 'flex';
+                
+                try {
+                    // 移除当前模型
+                    if (this.currentModel) {
+                        this.scene.remove(this.currentModel);
+                        this.currentModel = null;
+                    }
+                    
+                    const gltf = await new Promise((resolve, reject) => {
+                        this.loader.load(modelUrl,
+                            gltf => resolve(gltf),
+                            undefined,
+                            error => reject(error)
+                        );
+                    });
+                    
+                    this.currentModel = gltf.scene;
+                    this.scene.add(this.currentModel);
+                    
+                    // 居中模型
+                    this.centerModel();
+                    
+                } catch (error) {
+                    console.error('加载模型失败:', error);
+                    alert('加载模型失败: ' + error.message);
+                } finally {
+                    this.loadingScreen.style.display = 'none';
+                }
+            }
+            
+            centerModel() {
+                if (!this.currentModel) return;
+                
+                const box = new THREE.Box3().setFromObject(this.currentModel);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                
+                // 将模型移动到中心
+                this.currentModel.position.x = -center.x;
+                this.currentModel.position.y = -center.y;
+                this.currentModel.position.z = -center.z;
+                
+                // 调整相机位置
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const fov = this.camera.fov * (Math.PI / 180);
+                let cameraZ = Math.abs(maxDim / Math.tan(fov / 2));
+                
+                // 添加一些边距
+                cameraZ *= 1.5;
+                
+                this.camera.position.set(0, maxDim / 2, cameraZ);
+                this.controls.target.set(0, 0, 0);
+                this.camera.updateProjectionMatrix();
+                this.controls.update();
+                
+                // 调整网格大小
+                const gridSize = Math.max(size.x, size.z) * 2;
+                this.scene.remove(this.gridHelper);
+                this.gridHelper = new THREE.GridHelper(gridSize, Math.floor(gridSize));
+                this.gridHelper.visible = false;
+                this.scene.add(this.gridHelper);
+                
+                // 调整坐标轴大小
+                const axesSize = maxDim;
+                this.scene.remove(this.axesHelper);
+                this.axesHelper = new THREE.AxesHelper(axesSize);
+                this.axesHelper.visible = false;
+                this.scene.add(this.axesHelper);
+            }
+            
+            updateStats() {
+                // 更新模型统计信息
+                if (this.currentModel) {
+                    let vertices = 0;
+                    let triangles = 0;
+                    
+                    this.currentModel.traverse((child) => {
+                        if (child.isMesh) {
+                            const geometry = child.geometry;
+                            vertices += geometry.attributes.position.count;
+                            if (geometry.index) {
+                                triangles += geometry.index.count / 3;
+                            } else {
+                                triangles += geometry.attributes.position.count / 3;
+                            }
+                        }
+                    });
+                    
+                    document.getElementById('vertices').textContent = vertices.toLocaleString();
+                    document.getElementById('triangles').textContent = triangles.toLocaleString();
+                }
+                
+                // 更新渲染器统计信息
+                document.getElementById('drawCalls').textContent = this.renderer.info.render.calls;
+            }
+            
+            onWindowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            
+            animate() {
+                requestAnimationFrame(this.animate.bind(this));
+                
+                this.stats.begin();
+                
+                this.controls.update();
+                this.renderer.render(this.scene, this.camera);
+                this.updateStats();
+                
+                this.stats.end();
+            }
+        }
+
+        // 创建应用实例
+        new SimpleModelViewer();
+    </script>
+</body>
+</html> 
