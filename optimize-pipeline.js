@@ -18,6 +18,7 @@ import {
 } from "@gltf-transform/functions";
 import { MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
 import { PropertyType } from "@gltf-transform/core";
+// import { createTextureCompressConfig } from "./utils/texture-utils.js";
 // import { KTXSTextureFormat } from "@gltf-transform/extensions";
 
 export async function optimizePipeline(document) {
@@ -36,13 +37,17 @@ export async function optimizePipeline(document) {
       ],
     }), // 去重
     instance({ min: 2 }), // 实例化
-    draco({ compressionLevel: 10 }), // 启用draco压缩 
+    // draco({ compressionLevel: 10 }), // 启用draco压缩
+    // textureCompress(createTextureCompressConfig({
+    //   targetFormat: "webp",
+    //   enableResize: true,
+    //   logProgress: true
+    // })), // 启用动态纹理分辨率调整（2的n次方）
     textureCompress({
       targetFormat: "webp",
       resize: [1024, 1024],
-      // }).registerDependencies({
-      //   'ktx-software': KTXSTextureFormat,
-    }), // 启用KTX2压缩
+      quality: 80,
+    }), // 启用动态纹理分辨率调整（2的n次方）
     simplify({
       simplifier: MeshoptSimplifier,
       ratio: 0.75, // 简化比例 0.75
@@ -50,7 +55,7 @@ export async function optimizePipeline(document) {
       filter: (primitive) => primitive.getPointCount() > 100,
     }),
     reorder({ encoder: MeshoptEncoder, level: "high" }), // 重排序
-    weld({ tolerance: 0.001, toleranceNormal: 0.25 }), 
+    weld({ tolerance: 0.001, toleranceNormal: 0.25 }),
     partition({ meshes: true, minSize: 2 }), // 启用分块功能
     unweld(),
     tangents({ generateTangents }), // 生成切线
@@ -68,7 +73,7 @@ export async function optimizePipeline(document) {
       tolerance: 0.000001,
       overwrite: true,
       reportStatistics: console.log,
-    }), // 最终顶点合并验证
+    }) // 最终顶点合并验证
   );
   console.log("顶点合并验证通过");
 }
