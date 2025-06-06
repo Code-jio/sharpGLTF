@@ -55,13 +55,15 @@ export async function optimizePipeline(document) {
       filter: (primitive) => primitive.getPointCount() > 100,
     }),
     reorder({ encoder: MeshoptEncoder, level: "high" }), // 重排序
-    weld({ tolerance: 0.001, toleranceNormal: 0.25 }),
-    partition({ meshes: true, minSize: 2 }), // 启用分块功能
-    unweld(),
+    // weld({ tolerance: 0.001, toleranceNormal: 0.25 }), // 合并顶点
+    // partition({ meshes: true, minSize: 2 }), // 启用分块功能
+    // unweld(),
     tangents({ generateTangents }), // 生成切线
     weld({
       tolerance: 0.00001,
       toleranceNormal: 0.1,
+      overwrite: true,
+      reportStatistics: console.log,
       onComplete: (stats) => {
         console.log(
           `合并 ${stats.original} 顶点数到 ${stats.merged} 顶点数.`, // 输出合并后的顶点数量
@@ -69,11 +71,11 @@ export async function optimizePipeline(document) {
         );
       },
     }), // 重排序后再次合并
-    weld({
-      tolerance: 0.000001,
-      overwrite: true,
-      reportStatistics: console.log,
-    }) // 最终顶点合并验证
+    // weld({
+    //   tolerance: 0.000001,
+    //   overwrite: true,
+    //   reportStatistics: console.log,
+    // }) // 最终顶点合并验证
   );
   console.log("顶点合并验证通过");
 }

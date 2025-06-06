@@ -6,7 +6,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node main.js",
-    "start:lod": "node main.js --lod"
+    "start:lod": "node main.js --lod",
+    "build:glb": "node main.js --format glb",
+    "build:gltf": "node main.js --format gltf",
+    "build:both": "node main.js --format both",
+    "build:glb-lod": "node main.js --lod --format glb",
+    "build:separate": "node main.js --format both --directory separate",
+    "help": "node main.js --help"
   },
   "author": "hbg",
   "license": "ISC",
