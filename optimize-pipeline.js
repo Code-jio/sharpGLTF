@@ -18,7 +18,7 @@ import {
 } from "@gltf-transform/functions";
 import { MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
 import { PropertyType } from "@gltf-transform/core";
-// import { createTextureCompressConfig } from "./utils/texture-utils.js";
+import { createTextureCompressConfig } from "./utils/texture-utils.js";
 // import { KTXSTextureFormat } from "@gltf-transform/extensions";
 
 export async function optimizePipeline(document) {
@@ -37,7 +37,7 @@ export async function optimizePipeline(document) {
       ],
     }), // 去重
     instance({ min: 2 }), // 实例化
-    // draco({ compressionLevel: 10 }), // 启用draco压缩
+    draco({ compressionLevel: 8 }), // 启用draco压缩
     // textureCompress(createTextureCompressConfig({
     //   targetFormat: "webp",
     //   enableResize: true,
@@ -58,10 +58,9 @@ export async function optimizePipeline(document) {
     // weld({ tolerance: 0.001, toleranceNormal: 0.25 }), // 合并顶点
     // partition({ meshes: true, minSize: 2 }), // 启用分块功能
     // unweld(),
-    tangents({ generateTangents }), // 生成切线
     weld({
-      tolerance: 0.00001,
-      toleranceNormal: 0.1,
+      tolerance: 0.00001, // 顶点合并容差
+      toleranceNormal: 0.1, // 法线合并容差
       overwrite: true,
       reportStatistics: console.log,
       onComplete: (stats) => {
@@ -71,6 +70,7 @@ export async function optimizePipeline(document) {
         );
       },
     }), // 重排序后再次合并
+    tangents({ generateTangents }), // 生成切线
     // weld({
     //   tolerance: 0.000001,
     //   overwrite: true,

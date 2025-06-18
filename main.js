@@ -127,31 +127,31 @@ async function processModels(generateLOD = false, outputConfig = {}) {
 // 显示使用帮助
 function showHelp() {
   console.log(`
-📖 使用说明:
+    📖 使用说明:
 
-基本用法:
-  node main.js                          # 使用默认设置处理模型
-  node main.js --lod                    # 生成LOD级别
-  
-输出格式控制:
-  node main.js --format glb             # 只输出GLB格式
-  node main.js --format gltf            # 只输出GLTF格式
-  node main.js --format both            # 输出两种格式
-  node main.js --format preserve        # 保持原格式(默认)
-  
-命名和目录选项:
-  node main.js --naming suffix          # 文件名添加格式后缀
-  node main.js --naming custom          # 使用自定义命名
-  node main.js --directory separate     # 按格式分目录存放
-  node main.js --no-overwrite           # 不覆盖已存在文件
-  
-组合使用:
-  node main.js --lod --format both --naming suffix
-  node main.js --format glb --directory separate
-  
-支持的格式: glb, gltf, both, preserve
-支持的命名: preserve, suffix, custom  
-支持的目录: mixed, separate
+    基本用法:
+      node main.js                          # 使用默认设置处理模型
+      node main.js --lod                    # 生成LOD级别
+      
+    输出格式控制:
+      node main.js --format glb             # 只输出GLB格式
+      node main.js --format gltf            # 只输出GLTF格式
+      node main.js --format both            # 输出两种格式
+      node main.js --format preserve        # 保持原格式(默认)
+      
+    命名和目录选项:
+      node main.js --naming suffix          # 文件名添加格式后缀
+      node main.js --naming custom          # 使用自定义命名
+      node main.js --directory separate     # 按格式分目录存放
+      node main.js --no-overwrite           # 不覆盖已存在文件
+      
+    组合使用:
+      node main.js --lod --format both --naming suffix
+      node main.js --format glb --directory separate
+      
+    支持的格式: glb, gltf, both, preserve
+    支持的命名: preserve, suffix, custom  
+    支持的目录: mixed, separate
 `);
 }
 
